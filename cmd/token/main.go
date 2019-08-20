@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/numbermess/token-extractor/pkg/token"
 	"log"
-	"token-extractor/pkg/token"
 )
 
 func main() {

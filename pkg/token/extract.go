@@ -3,9 +3,13 @@ package token
 import (
 	"context"
 	"errors"
-	"google.golang.org/grpc/metadata"
+	"github.com/numbermess/token-extractor/pkg/model"
+	"reflect"
 	"strings"
-	"token-extractor/pkg/model"
+)
+
+const (
+	Context = "Context"
 )
 
 func ExtractToken(line string) (*model.Token, error) {
@@ -32,17 +36,21 @@ func ExtractToken(line string) (*model.Token, error) {
 }
 
 func Extract(ctx context.Context) (*model.Token, error) {
-	if md, ok := metadata.FromIncomingContext(ctx); !ok {
-		return nil, errors.New("cannot extract metadata from context")
-	} else {
-		chunks := md.Get("Authorization")
-		if len(chunks) == 0 {
-			return nil, errors.New("there is no Authorization header present in the metadata")
+	something := reflect.ValueOf(ctx).Elem().FieldByName(Context).Interface()
+	if ktx, ok := something.(context.Context); ok {
+		stuff := ktx.Value("authorization")
+		if stuff != nil {
+			if chunks, ok := stuff.([]string); ok {
+				if len(chunks) == 0 {
+					return nil, errors.New("there is no Authorization header present in the metadata")
+				}
+				if len(chunks) > 0 {
+					line := chunks[0]
+					return ExtractToken(line)
+				}
+			}
 		}
-		if len(chunks) > 0 {
-			line := chunks[0]
-			return ExtractToken(line)
-		}
+
 	}
 	return nil, errors.New("unexpected error")
 }
