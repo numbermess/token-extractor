@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	Context = "Context"
+	Context       = "Context"
+	Authorization = "authorization"
 )
 
 func ExtractToken(line string) (*model.Token, error) {
@@ -38,7 +39,7 @@ func ExtractToken(line string) (*model.Token, error) {
 func Extract(ctx context.Context) (*model.Token, error) {
 	something := reflect.ValueOf(ctx).Elem().FieldByName(Context).Interface()
 	if ktx, ok := something.(context.Context); ok {
-		stuff := ktx.Value("authorization")
+		stuff := ktx.Value(Authorization)
 		if stuff != nil {
 			if chunks, ok := stuff.([]string); ok {
 				if len(chunks) == 0 {
@@ -50,7 +51,6 @@ func Extract(ctx context.Context) (*model.Token, error) {
 				}
 			}
 		}
-
 	}
-	return nil, errors.New("unexpected error")
+	return nil, errors.New("a token could not extracted")
 }
