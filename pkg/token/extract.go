@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"errors"
+	"github.com/numbermess/token-extractor/pkg/metadata"
 	"github.com/numbermess/token-extractor/pkg/model"
 	"reflect"
 	"strings"
@@ -39,7 +40,7 @@ func ExtractToken(line string) (*model.Token, error) {
 func Extract(ctx context.Context) (*model.Token, error) {
 	something := reflect.ValueOf(ctx).Elem().FieldByName(Context).Interface()
 	if ktx, ok := something.(context.Context); ok {
-		stuff := ktx.Value(Authorization)
+		stuff := ktx.Value(metadata.MD{})
 		if stuff != nil {
 			if chunks, ok := stuff.([]string); ok {
 				if len(chunks) == 0 {
