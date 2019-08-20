@@ -5,13 +5,7 @@ import (
 	"errors"
 	"github.com/numbermess/token-extractor/pkg/metadata"
 	"github.com/numbermess/token-extractor/pkg/model"
-	"reflect"
 	"strings"
-)
-
-const (
-	Context       = "Context"
-	Authorization = "authorization"
 )
 
 func ExtractToken(line string) (*model.Token, error) {
