@@ -5,7 +5,12 @@ import (
 	"errors"
 	"github.com/numbermess/token-extractor/pkg/metadata"
 	"github.com/numbermess/token-extractor/pkg/model"
+	"reflect"
 	"strings"
+)
+
+const (
+	Context = "Context"
 )
 
 func ExtractToken(line string) (*model.Token, error) {
@@ -33,19 +38,23 @@ func ExtractToken(line string) (*model.Token, error) {
 
 func Extract(ctx context.Context) (*model.Token, error) {
 
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		chunks := md.Get("Authorization")
-		if len(chunks) > 0 {
-			if len(chunks) == 0 {
-				return nil, errors.New("there is no Authorization header present in the metadata")
-			}
+	blob := reflect.ValueOf(ctx).FieldByName(Context).Interface()
+	if ktx, ok := blob.(context.Context); ok {
+		if md, ok := metadata.FromIncomingContext(ktx); ok {
+			chunks := md.Get("Authorization")
 			if len(chunks) > 0 {
-				line := chunks[0]
-				return ExtractToken(line)
+				if len(chunks) == 0 {
+					return nil, errors.New("there is no Authorization header present in the metadata")
+				}
+				if len(chunks) > 0 {
+					line := chunks[0]
+					return ExtractToken(line)
+				}
+
 			}
 
 		}
-
 	}
+
 	return nil, errors.New("a token could not extracted")
 }
