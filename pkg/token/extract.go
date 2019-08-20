@@ -38,20 +38,20 @@ func ExtractToken(line string) (*model.Token, error) {
 }
 
 func Extract(ctx context.Context) (*model.Token, error) {
-	something := reflect.ValueOf(ctx).Elem().FieldByName(Context).Interface()
-	if ktx, ok := something.(context.Context); ok {
-		stuff := ktx.Value(metadata.MD{})
-		if stuff != nil {
-			if chunks, ok := stuff.([]string); ok {
-				if len(chunks) == 0 {
-					return nil, errors.New("there is no Authorization header present in the metadata")
-				}
-				if len(chunks) > 0 {
-					line := chunks[0]
-					return ExtractToken(line)
-				}
+
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		chunks := md.Get("Authorization")
+		if len(chunks) > 0 {
+			if len(chunks) == 0 {
+				return nil, errors.New("there is no Authorization header present in the metadata")
 			}
+			if len(chunks) > 0 {
+				line := chunks[0]
+				return ExtractToken(line)
+			}
+
 		}
+
 	}
 	return nil, errors.New("a token could not extracted")
 }
